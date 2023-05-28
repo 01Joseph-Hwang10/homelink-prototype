@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { connectStorageEmulator, getStorage } from 'firebase/storage';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -22,7 +23,7 @@ export const initializeFirebase = () => {
   const isDev = import.meta.env.DEV;
   if (isDev) {
     connectFirestoreEmulator(getFirestore(), 'localhost', 8080);
-    // connectAuthEmulator(getAuth(), 'http://localhost:9099');
+    connectAuthEmulator(getAuth(), 'http://localhost:9099');
     connectStorageEmulator(getStorage(), 'localhost', 9199);
     connectFunctionsEmulator(getFunctions(), 'localhost', 5001);
   }

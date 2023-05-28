@@ -5,49 +5,28 @@ import {
   getRedirectResult,
   UserCredential,
 } from 'firebase/auth';
-import { AbodeLocation, Client, Resident, UserRole } from '../model';
 
 /**
  * @description
- * 카카오 로그인을 위한 함수입니다.
- * 실행하면 카카오 로그인 프로세스가 진행되고
- * 로그인이 완료되면 firebase의 auth에 로그인 정보가 저장됩니다.
+ * 카카오 로그인페이지로 리다이렉트합니다.
  */
-export const loginWithKakao = async (
-  role: UserRole
-): Promise<Client | Resident | null> => {
+export const redirectToKakaoLoginPage = (): void => {
   const kakaoProvider = new OAuthProvider('oidc.kakao');
   const auth = getAuth();
-  await signInWithRedirect(auth, kakaoProvider);
-  let userCredential: UserCredential;
-  try {
-    const result = await getRedirectResult(auth);
-    if (!result) throw new Error('Redirect window not opened');
-    userCredential = result;
-  } catch (error) {
-    alert('인증에 실패했습니다.');
-    window.location.assign('/');
-    return null;
-  }
-  const email = userCredential.user.email;
-  if (!email) throw new Error('Email not found');
-  const uid = userCredential.user.uid;
-  console.log(userCredential.user);
-  alert(email);
-  if (role === UserRole.Client) {
-    const client = Client.fromJSON({ uid, email, requests: [] });
-    await client.create();
-    return client;
-  } else if (role === UserRole.Resident) {
-    const resident = Resident.fromJSON({
-      uid,
-      email,
-      requests: [],
-      abode: AbodeLocation.UNKNOWN,
-    });
-    await resident.create();
-    return resident;
-  } else {
-    throw new Error('Invalid role');
-  }
+  signInWithRedirect(auth, kakaoProvider);
+};
+
+/**
+ * @description
+ * 카카오 로그인 결과를 받아옵니다.
+ * {@link redirectToKakaoLoginPage} 함수를 통해 리다이렉트된 페이지에서 로그인이 완료되었을 시에만
+ * 오류 없이 {@link UserCredential} 객체를 반환합니다.
+ *
+ * 만약 리다이렉트 페이지가 아직 열리지 않았을 경우에는 null을 반환합니다.
+ */
+export const getKakaoLoginResult = async (): Promise<UserCredential | null> => {
+  const result = await getRedirectResult(getAuth());
+  if (!result) return null;
+  if (!result.user.email) throw new Error('이메일이 없습니다.');
+  return result;
 };
