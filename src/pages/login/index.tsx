@@ -2,7 +2,10 @@ import React, { useEffect } from 'react';
 import { User, getAuth } from 'firebase/auth';
 import { getKakaoLoginResult, redirectToKakaoLoginPage } from '../../auth';
 import { UserRole } from '../../model';
-import { getOrCreateResidentUser } from './get-or-create-user';
+import {
+  getOrCreateClientUser,
+  getOrCreateResidentUser,
+} from './get-or-create-user';
 import { useAppDispatch } from '../../store';
 import { setMode, setUser } from '../../store/slices/user.slice';
 import { batch } from 'react-redux';
@@ -10,6 +13,7 @@ import { RoutePaths } from '../../constant';
 
 const Login: React.FC = () => {
   const dispatch = useAppDispatch();
+
   const getOrCreateUser = async (user: User) => {
     const urlSearchParams = new URLSearchParams();
     if (urlSearchParams.get('role') === UserRole.Resident) {
@@ -20,7 +24,7 @@ const Login: React.FC = () => {
       });
       window.location.assign(RoutePaths.residents);
     } else {
-      const client = await getOrCreateResidentUser(user);
+      const client = await getOrCreateClientUser(user);
       batch(() => {
         dispatch(setUser(client.toJSON()));
         dispatch(setMode(UserRole.Client));
